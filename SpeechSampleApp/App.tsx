@@ -16,6 +16,7 @@ import {
   View,
   Text,
   TextInput,
+  ActivityIndicator,
   Button,
   ScrollView,
   useColorScheme,
@@ -43,6 +44,7 @@ function AppContent() {
   const [sttPartial, setSttPartial] = useState('');
   const [sttFinal, setSttFinal] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [sttError, setSttError] = useState('');
 
   useEffect(() => {
     const startListener = TextToSpeech.addEventListener('onStart', () =>
@@ -66,10 +68,12 @@ function AppContent() {
       setSttFinal(result.transcript);
       setSttPartial('');
       setIsListening(false);
+      setSttError('');
     });
-    const sttError = SpeechToText.addEventListener('onError', () =>
-      setIsListening(false),
-    );
+    const sttError = SpeechToText.addEventListener('onError', error => {
+      setIsListening(false);
+      setSttError(error?.message ?? 'Speech recognition error');
+    });
     const sttEnd = SpeechToText.addEventListener('onEnd', () =>
       setIsListening(false),
     );
@@ -94,9 +98,13 @@ function AppContent() {
 
   const handleStartListening = async () => {
     const granted = await SpeechToText.requestPermissions();
-    if (!granted) return;
+    if (!granted) {
+      setSttError('Microphone permission is required to use speech-to-text.');
+      return;
+    }
     setSttPartial('');
     setSttFinal('');
+    setSttError('');
     await SpeechToText.startListening({ language: 'en-US', partialResults: true });
   };
 
@@ -110,6 +118,11 @@ function AppContent() {
       style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
       contentContainerStyle={styles.content}
     >
+      <View style={styles.statusRow}>
+        <StatusPill label="Speaking" active={isSpeaking} color="#2563eb" />
+        <StatusPill label="Listening" active={isListening} color="#16a34a" />
+      </View>
+
       <Text style={styles.heading}>rn-text-to-speech</Text>
       <TextInput
         style={styles.input}
@@ -131,11 +144,43 @@ function AppContent() {
         />
         <Button title="Stop" color="#d33" onPress={handleStopListening} />
       </View>
+      {isListening && (
+        <View style={styles.inlineStatus}>
+          <ActivityIndicator size="small" color="#16a34a" />
+          <Text style={styles.inlineStatusText}>Listening… speak now</Text>
+        </View>
+      )}
+      {isSpeaking && (
+        <View style={styles.inlineStatus}>
+          <ActivityIndicator size="small" color="#2563eb" />
+          <Text style={styles.inlineStatusText}>Playing speech…</Text>
+        </View>
+      )}
       <Text style={styles.label}>Partial:</Text>
       <Text style={styles.output}>{sttPartial || '—'}</Text>
       <Text style={styles.label}>Final:</Text>
       <Text style={styles.output}>{sttFinal || '—'}</Text>
+      {!!sttError && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{sttError}</Text>
+        </View>
+      )}
     </ScrollView>
+  );
+}
+
+type StatusPillProps = {
+  label: string;
+  active: boolean;
+  color: string;
+};
+
+function StatusPill({ label, active, color }: StatusPillProps) {
+  return (
+    <View style={[styles.pill, { borderColor: color, backgroundColor: active ? `${color}15` : '#f6f7f9' }]}> 
+      <View style={[styles.dot, { backgroundColor: active ? color : '#9ca3af' }]} />
+      <Text style={[styles.pillText, { color: active ? color : '#6b7280' }]}>{label}</Text>
+    </View>
   );
 }
 
@@ -143,9 +188,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
+    backgroundColor: 'white'
   },
   content: {
     paddingBottom: 32,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
   },
   heading: {
     fontSize: 20,
@@ -165,6 +216,16 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
+  inlineStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 6,
+  },
+  inlineStatusText: {
+    color: '#374151',
+    fontWeight: '500',
+  },
   label: {
     marginTop: 8,
     fontWeight: '600',
@@ -173,6 +234,35 @@ const styles = StyleSheet.create({
     minHeight: 24,
     paddingVertical: 4,
     color: '#333',
+  },
+  errorBox: {
+    backgroundColor: '#fee2e2',
+    borderColor: '#fca5a5',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 8,
+  },
+  errorText: {
+    color: '#b91c1c',
+    fontWeight: '600',
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  pillText: {
+    fontWeight: '600',
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 6,
   },
 });
 

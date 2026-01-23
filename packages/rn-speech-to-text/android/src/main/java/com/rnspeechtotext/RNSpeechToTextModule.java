@@ -18,6 +18,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.facebook.react.modules.core.PermissionListener;
@@ -61,31 +62,33 @@ public class RNSpeechToTextModule extends ReactContextBaseJavaModule implements 
             return;
         }
 
-        try {
-            if (speechRecognizer == null) {
-                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(reactContext);
-                speechRecognizer.setRecognitionListener(this);
+        UiThreadUtil.runOnUiThread(() -> {
+            try {
+                if (speechRecognizer == null) {
+                    speechRecognizer = SpeechRecognizer.createSpeechRecognizer(reactContext);
+                    speechRecognizer.setRecognitionListener(this);
+                }
+
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                
+                String language = options.hasKey("language") ? options.getString("language") : "en-US";
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, language);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, language);
+                
+                int maxResults = options.hasKey("maxResults") ? options.getInt("maxResults") : 5;
+                intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, maxResults);
+                
+                boolean partialResults = options.hasKey("partialResults") ? options.getBoolean("partialResults") : true;
+                intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, partialResults);
+
+                speechRecognizer.startListening(intent);
+                isListening = true;
+                promise.resolve(null);
+            } catch (Exception e) {
+                promise.reject("ERROR", "Failed to start listening: " + e.getMessage());
             }
-
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            
-            String language = options.hasKey("language") ? options.getString("language") : "en-US";
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, language);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, language);
-            
-            int maxResults = options.hasKey("maxResults") ? options.getInt("maxResults") : 5;
-            intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, maxResults);
-            
-            boolean partialResults = options.hasKey("partialResults") ? options.getBoolean("partialResults") : true;
-            intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, partialResults);
-
-            speechRecognizer.startListening(intent);
-            isListening = true;
-            promise.resolve(null);
-        } catch (Exception e) {
-            promise.reject("ERROR", "Failed to start listening: " + e.getMessage());
-        }
+        });
     }
 
     @ReactMethod
@@ -95,27 +98,31 @@ public class RNSpeechToTextModule extends ReactContextBaseJavaModule implements 
             return;
         }
 
-        try {
-            if (speechRecognizer != null) {
-                speechRecognizer.stopListening();
+        UiThreadUtil.runOnUiThread(() -> {
+            try {
+                if (speechRecognizer != null) {
+                    speechRecognizer.stopListening();
+                }
+                promise.resolve(null);
+            } catch (Exception e) {
+                promise.reject("ERROR", "Failed to stop listening: " + e.getMessage());
             }
-            promise.resolve(null);
-        } catch (Exception e) {
-            promise.reject("ERROR", "Failed to stop listening: " + e.getMessage());
-        }
+        });
     }
 
     @ReactMethod
     public void cancel(Promise promise) {
-        try {
-            if (speechRecognizer != null) {
-                speechRecognizer.cancel();
+        UiThreadUtil.runOnUiThread(() -> {
+            try {
+                if (speechRecognizer != null) {
+                    speechRecognizer.cancel();
+                }
+                isListening = false;
+                promise.resolve(null);
+            } catch (Exception e) {
+                promise.reject("ERROR", "Failed to cancel: " + e.getMessage());
             }
-            isListening = false;
-            promise.resolve(null);
-        } catch (Exception e) {
-            promise.reject("ERROR", "Failed to cancel: " + e.getMessage());
-        }
+        });
     }
 
     @ReactMethod
@@ -302,8 +309,12 @@ public class RNSpeechToTextModule extends ReactContextBaseJavaModule implements 
     public void invalidate() {
         super.invalidate();
         if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-            speechRecognizer = null;
+            UiThreadUtil.runOnUiThread(() -> {
+                if (speechRecognizer != null) {
+                    speechRecognizer.destroy();
+                    speechRecognizer = null;
+                }
+            });
         }
     }
 }
