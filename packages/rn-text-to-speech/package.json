@@ -1,0 +1,38 @@
+{
+  "name": "rn-text-to-speech",
+  "version": "0.1.0",
+  "description": "React Native text-to-speech library",
+  "main": "dist/index.js",
+  "react-native": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "android",
+    "ios",
+    "*.podspec",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "react-native",
+    "text-to-speech",
+    "tts",
+    "voice"
+  ],
+  "author": "afzaal",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-native": ">=0.60.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-native": "^0.70.0",
+    "typescript": "^5.4.0"
+  }
+}

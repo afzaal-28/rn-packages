@@ -1,0 +1,20 @@
+{
+  "name": "rn-packages-monorepo",
+  "version": "0.1.0",
+  "private": false,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "lint": "echo \"TODO: add lint script\"",
+    "test": "echo \"TODO: add test runner\"",
+    "pack:all": "npm run build && for pkg in packages/*; do (cd $pkg && npm pack); done",
+    "collect:pack": "mkdir -p bin && mv packages/*/*.tgz bin/ || true",
+    "pack": "npm run pack:all && npm run collect:pack"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  }
+}
