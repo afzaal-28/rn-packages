@@ -62,6 +62,7 @@ export const LiquidBackground: React.FC<LiquidBackgroundProps> = ({
           style={[
             styles.wave,
             {
+              backgroundColor: colors[0],
               transform: [
                 {
                   translateY: animatedValue.interpolate({
@@ -83,6 +84,7 @@ export const LiquidBackground: React.FC<LiquidBackgroundProps> = ({
           style={[
             styles.wave,
             {
+              backgroundColor: colors[1] || colors[0],
               transform: [
                 {
                   translateY: animatedValue.interpolate({
@@ -125,7 +127,6 @@ const styles = StyleSheet.create({
     width: '200%',
     height: '200%',
     borderRadius: '50%',
-    background: `linear-gradient(45deg, ${colors.join(', ')})`,
   },
   content: {
     flex: 1,

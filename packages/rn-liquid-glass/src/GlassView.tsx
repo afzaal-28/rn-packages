@@ -33,9 +33,6 @@ export const GlassView: React.FC<GlassViewProps> = ({
             shadowRadius,
             shadowOffset: { width: 0, height: 10 },
           }),
-          ...(gradient && {
-            background: `linear-gradient(${gradientAngle}deg, ${gradientColors.join(', ')})`,
-          }),
         },
         style,
       ]}
@@ -44,8 +41,6 @@ export const GlassView: React.FC<GlassViewProps> = ({
         style={[
           styles.glassOverlay,
           {
-            backdropFilter: `blur(${blurAmount}px)`,
-            WebkitBackdropFilter: `blur(${blurAmount}px)`,
             opacity,
             borderRadius,
           },

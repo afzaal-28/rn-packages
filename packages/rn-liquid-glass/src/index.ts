@@ -9,8 +9,12 @@ export type {
   AnimationType,
 } from './types';
 
+import { GlassView as GlassViewComponent } from './GlassView';
+import { LiquidBackground as LiquidBackgroundComponent } from './LiquidBackground';
+import { BlurView as BlurViewComponent } from './BlurView';
+
 export default {
-  GlassView,
-  LiquidBackground,
-  BlurView,
+  GlassView: GlassViewComponent,
+  LiquidBackground: LiquidBackgroundComponent,
+  BlurView: BlurViewComponent,
 };
