@@ -6,7 +6,7 @@ module.exports = {
         packageInstance: 'new RNSpeechToTextPackage()',
       },
       ios: {
-        project: './ios/RNSpeechToText.xcodeproj',
+        sourceDir: './ios',
       },
     },
   },

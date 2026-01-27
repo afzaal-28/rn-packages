@@ -82,7 +82,7 @@ public class RNOCRModule extends ReactContextBaseJavaModule {
                     resultMap.putString("text", recognizedText);
                     
                     if (result.getTextBlocks().size() > 0) {
-                        Text.Block firstBlock = result.getTextBlocks().get(0);
+                        Text.TextBlock firstBlock = result.getTextBlocks().get(0);
                         WritableMap boundingBox = Arguments.createMap();
                         boundingBox.putInt("x", firstBlock.getBoundingBox().left);
                         boundingBox.putInt("y", firstBlock.getBoundingBox().top);
