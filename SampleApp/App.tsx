@@ -5,25 +5,11 @@
  * @format
  */
 
-import React, { useEffect, useState } from 'react';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import {
-  StatusBar,
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  ActivityIndicator,
-  Button,
-  ScrollView,
-  useColorScheme,
-  Alert,
-} from 'react-native';
-import TextToSpeech from 'rn-text-to-speech';
-import SpeechToText from 'rn-speech-to-text';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { StatusBar, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AppNavigator from './src/navigation/AppNavigator';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -31,10 +17,14 @@ function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
+
+export default App;
 
 function AppContent() {
   const insets = useSafeAreaInsets();

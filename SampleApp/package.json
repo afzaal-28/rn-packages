@@ -17,8 +17,14 @@
     "react-native": "0.83.1",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "^4.20.0",
-    "rn-speech-to-text": "file:../bin/rn-speech-to-text-0.1.0.tgz",
-    "rn-text-to-speech": "file:../bin/rn-text-to-speech-0.1.0.tgz"
+    "rn-biometric-auth": "file:../packages/rn-biometric-auth",
+    "rn-html-render": "file:../packages/rn-html-render",
+    "rn-liquid-glass": "file:../packages/rn-liquid-glass",
+    "rn-ocr": "file:../packages/rn-ocr",
+    "rn-smart-notifications": "file:../packages/rn-smart-notifications",
+    "rn-speech-to-text": "file:../packages/rn-speech-to-text",
+    "rn-text-to-speech": "file:../packages/rn-text-to-speech",
+    "rn-web-preview": "file:../packages/rn-web-preview"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

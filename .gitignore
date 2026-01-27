@@ -5,3 +5,4 @@ dist/
 *.tgz
 coverage/
 .nyc_output/
+build/
