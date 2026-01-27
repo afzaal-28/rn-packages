@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -43,6 +44,13 @@ public class RNBiometricAuthModule extends ReactContextBaseJavaModule {
         currentPromise = promise;
 
         try {
+            FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+            if (activity == null) {
+                currentPromise.reject("NO_ACTIVITY", "No activity found");
+                currentPromise = null;
+                return;
+            }
+
             Executor executor = ContextCompat.getMainExecutor(reactContext);
             BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                 .setTitle(options.hasKey("promptTitle") ? options.getString("promptTitle") : "Biometric Authentication")
@@ -52,7 +60,7 @@ public class RNBiometricAuthModule extends ReactContextBaseJavaModule {
                 .build();
 
             biometricPrompt = new BiometricPrompt(
-                getCurrentActivity(),
+                activity,
                 executor,
                 new BiometricPrompt.AuthenticationCallback() {
                     @Override
@@ -131,16 +139,16 @@ public class RNBiometricAuthModule extends ReactContextBaseJavaModule {
             case BiometricPrompt.ERROR_HW_NOT_PRESENT:
             case BiometricPrompt.ERROR_NO_SPACE:
             case BiometricPrompt.ERROR_SECURITY_UPDATE_REQUIRED:
-            case BiometricPrompt.ERROR_UNSUPPORTED:
                 return "NOT_AVAILABLE";
             case BiometricPrompt.ERROR_UNABLE_TO_PROCESS:
             case BiometricPrompt.ERROR_TIMEOUT:
-            case BiometricPrompt.ERROR_CANCEL:
             case BiometricPrompt.ERROR_USER_CANCELED:
             case BiometricPrompt.ERROR_VENDOR:
                 return "USER_CANCELED";
             case BiometricPrompt.ERROR_LOCKOUT:
                 return "LOCKOUT";
+            case BiometricPrompt.ERROR_LOCKOUT_PERMANENT:
+                return "LOCKOUT_PERMANENT";
             default:
                 return "UNKNOWN";
         }
