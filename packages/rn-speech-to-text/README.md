@@ -12,6 +12,7 @@ A React Native native module for speech recognition (speech-to-text) with TypeSc
 - 🌍 **Multi-language** support
 - 🔒 **Permission handling** for microphone and speech recognition
 - 📦 **Zero dependencies** (peer dependencies only)
+- 🎵 **Audio file transcription** (iOS only - see platform limitations below)
 
 ## Installation
 

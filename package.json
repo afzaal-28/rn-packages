@@ -6,12 +6,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "pnpm -r run build",
     "lint": "echo \"TODO: add lint script\"",
-    "test": "echo \"TODO: add test runner\"",
-    "pack:all": "npm run build && for pkg in packages/*; do (cd $pkg && npm pack); done",
-    "collect:pack": "mkdir -p bin && mv packages/*/*.tgz bin/ || true",
-    "pack": "npm run pack:all && npm run collect:pack"
+    "test": "echo \"TODO: add test runner\""
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

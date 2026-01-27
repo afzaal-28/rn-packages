@@ -5,6 +5,7 @@ import type {
   TextToSpeechError,
   TextToSpeechEvents,
   Voice,
+  ExportSpeechOptions,
 } from './types';
 
 export * from './types';
@@ -59,6 +60,30 @@ class TextToSpeech {
       throw new Error('Pitch must be between 0.5 and 2.0');
     }
     return NativeTextToSpeech.setDefaultPitch(pitch);
+  }
+
+  async exportToFile(
+    text: string,
+    options: ExportSpeechOptions
+  ): Promise<string> {
+    if (!text || text.trim().length === 0) {
+      throw new Error('Text cannot be empty');
+    }
+
+    if (!options.outputPath) {
+      throw new Error('Output path is required');
+    }
+
+    const defaultOptions: ExportSpeechOptions = {
+      language: 'en-US',
+      rate: 1.0,
+      pitch: 1.0,
+      volume: 1.0,
+      format: 'wav',
+      ...options,
+    };
+
+    return NativeTextToSpeech.exportToFile(text, defaultOptions);
   }
 
   addEventListener<K extends keyof TextToSpeechEvents>(

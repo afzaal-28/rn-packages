@@ -6,6 +6,11 @@ export interface TextToSpeechOptions {
   volume?: number;
 }
 
+export interface ExportSpeechOptions extends TextToSpeechOptions {
+  outputPath: string;
+  format?: 'wav' | 'mp3' | 'aac';
+}
+
 export interface Voice {
   id: string;
   name: string;

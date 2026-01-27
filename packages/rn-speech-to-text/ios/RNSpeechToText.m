@@ -252,12 +252,14 @@ RCT_EXPORT_METHOD(checkPermissions:(RCTPromiseResolveBlock)resolve
 - (void)handleError:(NSError *)error {
     NSString *errorCode = @"UNKNOWN";
     NSString *errorMessage = error.localizedDescription ?: @"Unknown error";
+    BOOL isRecoverableError = NO;
     
     if ([error.domain isEqualToString:@"kLSRErrorDomain"]) {
         switch (error.code) {
             case 1110:
                 errorCode = @"NO_MATCH";
                 errorMessage = @"No speech detected";
+                isRecoverableError = YES;
                 break;
             case 1700:
                 errorCode = @"NETWORK";
@@ -269,12 +271,15 @@ RCT_EXPORT_METHOD(checkPermissions:(RCTPromiseResolveBlock)resolve
         }
     }
     
-    NSDictionary *errorDict = @{
-        @"code": errorCode,
-        @"message": errorMessage
-    };
-    
-    [self sendEventWithName:@"onError" body:errorDict];
+    if (isRecoverableError) {
+        [self sendEventWithName:@"onEnd" body:@{}];
+    } else {
+        NSDictionary *errorDict = @{
+            @"code": errorCode,
+            @"message": errorMessage
+        };
+        [self sendEventWithName:@"onError" body:errorDict];
+    }
 }
 
 #pragma mark - SFSpeechRecognizerDelegate

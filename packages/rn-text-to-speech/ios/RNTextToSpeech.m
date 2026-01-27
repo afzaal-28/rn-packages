@@ -151,6 +151,62 @@ RCT_EXPORT_METHOD(setDefaultPitch:(double)pitch
     resolve(nil);
 }
 
+RCT_EXPORT_METHOD(exportToFile:(NSString *)text
+                  options:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    
+    if (!text || [text length] == 0) {
+        reject(@"INVALID_REQUEST", @"Text cannot be empty", nil);
+        return;
+    }
+    
+    NSString *outputPath = options[@"outputPath"];
+    if (!outputPath) {
+        reject(@"INVALID_REQUEST", @"Output path is required", nil);
+        return;
+    }
+    
+    AVSpeechUtterance *utterance = [AVSpeechUtterance speechUtteranceWithString:text];
+    
+    NSString *language = options[@"language"] ?: self.defaultLanguage;
+    float rate = options[@"rate"] ? [options[@"rate"] floatValue] : self.defaultRate;
+    float pitch = options[@"pitch"] ? [options[@"pitch"] floatValue] : self.defaultPitch;
+    NSString *voiceId = options[@"voice"];
+    
+    AVSpeechSynthesisVoice *voice = nil;
+    if (voiceId) {
+        voice = [AVSpeechSynthesisVoice voiceWithIdentifier:voiceId];
+    }
+    
+    if (!voice) {
+        voice = [AVSpeechSynthesisVoice voiceWithLanguage:language];
+    }
+    
+    if (!voice) {
+        reject(@"NOT_AVAILABLE", [NSString stringWithFormat:@"Voice not available for language: %@", language], nil);
+        return;
+    }
+    
+    utterance.voice = voice;
+    utterance.rate = rate;
+    utterance.pitchMultiplier = pitch;
+    
+    AVSpeechSynthesizer *fileSynthesizer = [[AVSpeechSynthesizer alloc] init];
+    
+    NSURL *outputURL = [NSURL fileURLWithPath:outputPath];
+    
+    [fileSynthesizer writeUtterance:utterance toBufferCallback:^(AVAudioBuffer * _Nonnull buffer) {
+        
+    } completionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            reject(@"EXPORT_ERROR", error.localizedDescription, error);
+        } else {
+            resolve(outputPath);
+        }
+    }];
+}
+
 - (NSString *)getQualityString:(AVSpeechSynthesisVoiceQuality)quality {
     switch (quality) {
         case AVSpeechSynthesisVoiceQualityDefault:

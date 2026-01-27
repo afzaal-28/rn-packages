@@ -1,5 +1,5 @@
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { TextToSpeechOptions, Voice } from './types';
+import type { TextToSpeechOptions, Voice, ExportSpeechOptions } from './types';
 
 const LINKING_ERROR =
   `The package 'rn-text-to-speech' doesn't seem to be linked. Make sure: \n\n` +
@@ -27,6 +27,7 @@ export interface NativeTextToSpeechModule {
   setDefaultLanguage(language: string): Promise<void>;
   setDefaultRate(rate: number): Promise<void>;
   setDefaultPitch(pitch: number): Promise<void>;
+  exportToFile(text: string, options: ExportSpeechOptions): Promise<string>;
 }
 
 export default RNTextToSpeech as NativeTextToSpeechModule;

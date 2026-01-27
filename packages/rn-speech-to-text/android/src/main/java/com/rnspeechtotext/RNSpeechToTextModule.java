@@ -206,6 +206,11 @@ public class RNSpeechToTextModule extends ReactContextBaseJavaModule implements 
     public void onError(int error) {
         isListening = false;
         
+        if (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
+            sendEvent("onEnd", Arguments.createMap());
+            return;
+        }
+        
         WritableMap errorMap = Arguments.createMap();
         String errorCode = getErrorCode(error);
         String errorMessage = getErrorMessage(error);

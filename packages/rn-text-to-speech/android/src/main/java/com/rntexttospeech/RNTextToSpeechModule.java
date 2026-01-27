@@ -5,6 +5,7 @@ import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 
 import android.os.Bundle;
+import java.io.File;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -222,6 +223,68 @@ public class RNTextToSpeechModule extends ReactContextBaseJavaModule {
             promise.resolve(null);
         } catch (Exception e) {
             promise.reject("ERROR", "Failed to set pitch: " + e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void exportToFile(String text, ReadableMap options, Promise promise) {
+        if (!isInitialized) {
+            promise.reject("NOT_AVAILABLE", "TTS engine not initialized");
+            return;
+        }
+
+        if (text == null || text.trim().isEmpty()) {
+            promise.reject("INVALID_REQUEST", "Text cannot be empty");
+            return;
+        }
+
+        if (!options.hasKey("outputPath")) {
+            promise.reject("INVALID_REQUEST", "Output path is required");
+            return;
+        }
+
+        try {
+            String outputPath = options.getString("outputPath");
+            String language = options.hasKey("language") ? options.getString("language") : defaultLanguage;
+            float rate = options.hasKey("rate") ? (float) options.getDouble("rate") : defaultRate;
+            float pitch = options.hasKey("pitch") ? (float) options.getDouble("pitch") : defaultPitch;
+            String voiceId = options.hasKey("voice") ? options.getString("voice") : null;
+
+            Locale locale = parseLocale(language);
+            int result = tts.setLanguage(locale);
+            
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                promise.reject("NOT_AVAILABLE", "Language not supported: " + language);
+                return;
+            }
+
+            tts.setSpeechRate(rate);
+            tts.setPitch(pitch);
+
+            if (voiceId != null) {
+                Set<Voice> voices = tts.getVoices();
+                for (Voice voice : voices) {
+                    if (voice.getName().equals(voiceId)) {
+                        tts.setVoice(voice);
+                        break;
+                    }
+                }
+            }
+
+            Bundle params = new Bundle();
+            String utteranceId = "export_" + System.currentTimeMillis();
+            params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
+
+            File outputFile = new File(outputPath);
+            int synthesizeResult = tts.synthesizeToFile(text, params, outputFile, utteranceId);
+            
+            if (synthesizeResult == TextToSpeech.SUCCESS) {
+                promise.resolve(outputPath);
+            } else {
+                promise.reject("EXPORT_ERROR", "Failed to export speech to file");
+            }
+        } catch (Exception e) {
+            promise.reject("UNKNOWN", "Error: " + e.getMessage());
         }
     }
 
