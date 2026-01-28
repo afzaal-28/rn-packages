@@ -1,22 +1,26 @@
 package com.speechsampleapp
 
-import com.facebook.react.ReactActivity
+import android.os.Bundle
+import androidx.fragment.app.FragmentActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
-class MainActivity : ReactActivity() {
+class MainActivity : FragmentActivity() {
 
-  /**
-   * Returns the name of the main component registered from JavaScript. This is used to schedule
-   * rendering of the component.
-   */
-  override fun getMainComponentName(): String = "SpeechSampleApp"
+    private var reactActivityDelegate: ReactActivityDelegate? = null
 
-  /**
-   * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
-   * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
-   */
-  override fun createReactActivityDelegate(): ReactActivityDelegate =
-      DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        reactActivityDelegate = DefaultReactActivityDelegate(
+            this,
+            "SpeechSampleApp",
+            fabricEnabled
+        )
+    }
+
+    override fun getMainComponentName(): String = "SpeechSampleApp"
+
+    override fun createReactActivityDelegate(): ReactActivityDelegate =
+        reactActivityDelegate!!
 }

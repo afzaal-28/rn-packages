@@ -7,7 +7,9 @@ import {
   Button,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import OCR from 'rn-ocr';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,8 +19,6 @@ export default function OCRPage() {
   const [extractedText, setExtractedText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
-  const [ocrLanguage, setOcrLanguage] = useState('en');
-  const [confidenceThreshold, setConfidenceThreshold] = useState('0.5');
 
   const requestPermissions = async () => {
     const granted = await OCR.requestPermissions();
@@ -26,26 +26,38 @@ export default function OCRPage() {
     if (!granted) {
       Alert.alert('Permission Required', 'Camera and storage permissions are required for OCR.');
     }
+    return granted;
   };
 
   const handleSelectImage = async () => {
-    if (!hasPermission) {
-      await requestPermissions();
+    const granted = await requestPermissions();
+    if (!granted) {
+      return;
     }
-    Alert.alert(
-      'OCR Feature',
-      'Select an image to extract text using OCR. This would use image picker in a real implementation.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Use Sample',
-          onPress: () => {
-            setSelectedImage('sample-image.jpg');
-            setExtractedText('');
-          },
-        },
-      ]
-    );
+
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        selectionLimit: 1,
+      });
+
+      if (result.didCancel) {
+        return;
+      }
+
+      if (result.errorCode) {
+        Alert.alert('Error', result.errorMessage || 'Failed to pick image');
+        return;
+      }
+
+      if (result.assets && result.assets[0]) {
+        setSelectedImage(result.assets[0].uri || null);
+        setExtractedText('');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open image picker');
+      console.error('Image picker error:', error);
+    }
   };
 
   const handleProcessImage = async () => {
@@ -53,21 +65,13 @@ export default function OCRPage() {
       Alert.alert('No Image', 'Please select an image first.');
       return;
     }
-    if (!hasPermission) {
-      await requestPermissions();
-    }
 
     setIsProcessing(true);
-    
-    try {
-      const result = await OCR.recognizeText(selectedImage, {
-        language: ocrLanguage,
-        scanMode: 'text',
-        confidenceThreshold: parseFloat(confidenceThreshold),
-      });
 
-      setExtractedText(result.text);
-      Alert.alert('Success', `Text extracted with ${result.confidence}% confidence`);
+    try {
+      const result = await OCR.recognizeText(selectedImage, {});
+
+      setExtractedText(result.text || 'No text detected in the image');
     } catch (error) {
       Alert.alert('Error', 'Failed to process image with OCR');
       console.error('OCR Error:', error);
@@ -85,7 +89,7 @@ export default function OCRPage() {
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.auroraOne} />
       <View style={styles.auroraTwo} />
-      
+
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={styles.scroll}
@@ -145,7 +149,14 @@ export default function OCRPage() {
 
           {isProcessing && (
             <View style={styles.processingBox}>
+              <ActivityIndicator size="small" color="#fcd34d" />
               <Text style={styles.processingText}>Processing image...</Text>
+            </View>
+          )}
+
+          {selectedImage && (
+            <View style={styles.imagePreview}>
+              <Image source={{ uri: selectedImage }} style={styles.previewImage} />
             </View>
           )}
 
@@ -156,21 +167,6 @@ export default function OCRPage() {
               <Button title="Clear" color="#ef4444" onPress={handleClear} />
             </View>
           )}
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.heading}>Integration Options</Text>
-          <Text style={styles.helper}>
-            To implement real OCR, integrate with one of these services:
-          </Text>
-
-          <View style={styles.integrationList}>
-            <Text style={styles.integrationItem}>• Google Cloud Vision API</Text>
-            <Text style={styles.integrationItem}>• Tesseract.js</Text>
-            <Text style={styles.integrationItem}>• Amazon Rekognition</Text>
-            <Text style={styles.integrationItem}>• Azure Computer Vision</Text>
-            <Text style={styles.integrationItem}>• react-native-ocr</Text>
-          </View>
         </View>
       </ScrollView>
     </View>
@@ -266,11 +262,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   processingText: {
     color: '#fcd34d',
     fontWeight: '600',
-    textAlign: 'center',
+  },
+  imagePreview: {
+    marginTop: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain',
   },
   resultBox: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -289,13 +297,6 @@ const styles = StyleSheet.create({
     color: '#e5e7eb',
     lineHeight: 20,
     marginBottom: 12,
-  },
-  integrationList: {
-    gap: 8,
-  },
-  integrationItem: {
-    color: '#cbd5e1',
-    lineHeight: 24,
   },
   auroraOne: {
     position: 'absolute',

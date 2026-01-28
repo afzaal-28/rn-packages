@@ -69,7 +69,7 @@ public class RNOCRModule extends ReactContextBaseJavaModule {
         try {
             Bitmap bitmap = loadBitmapFromUri(imageUri);
             if (bitmap == null) {
-                promise.reject("NO_IMAGE", "Failed to load image from URI");
+                promise.reject("NO_IMAGE", "Failed to load image from URI: " + imageUri);
                 return;
             }
 
@@ -103,6 +103,10 @@ public class RNOCRModule extends ReactContextBaseJavaModule {
     }
 
     private Bitmap loadBitmapFromUri(String uriString) throws IOException {
+        if (uriString == null || uriString.isEmpty()) {
+            return null;
+        }
+
         Uri uri = Uri.parse(uriString);
         String scheme = uri.getScheme();
 
@@ -121,12 +125,20 @@ public class RNOCRModule extends ReactContextBaseJavaModule {
                 android.graphics.Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(resolver, uri);
                 return bitmap;
             } catch (Exception e) {
+                android.util.Log.e("RNOCR", "Failed to load content URI: " + uriString, e);
                 return null;
             }
         } else if (scheme.equals("data")) {
-            String base64Data = uriString.substring(uriString.indexOf(",") + 1);
-            byte[] decodedBytes = Base64.decode(base64Data, Base64.DEFAULT);
-            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+            try {
+                String base64Data = uriString.substring(uriString.indexOf(",") + 1);
+                byte[] decodedBytes = Base64.decode(base64Data, Base64.DEFAULT);
+                return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+            } catch (Exception e) {
+                android.util.Log.e("RNOCR", "Failed to decode base64 data", e);
+                return null;
+            }
+        } else {
+            android.util.Log.e("RNOCR", "Unsupported URI scheme: " + scheme);
         }
 
         return null;

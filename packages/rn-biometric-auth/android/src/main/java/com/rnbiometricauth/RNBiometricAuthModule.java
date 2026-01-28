@@ -41,15 +41,19 @@ public class RNBiometricAuthModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        currentPromise = promise;
-
         try {
-            FragmentActivity activity = (FragmentActivity) getCurrentActivity();
+            android.app.Activity activity = getCurrentActivity();
             if (activity == null) {
-                currentPromise.reject("NO_ACTIVITY", "No activity found");
-                currentPromise = null;
+                promise.reject("NO_ACTIVITY", "No activity found");
                 return;
             }
+
+            if (!(activity instanceof FragmentActivity)) {
+                promise.reject("NOT_SUPPORTED", "Activity must be a FragmentActivity");
+                return;
+            }
+
+            currentPromise = promise;
 
             Executor executor = ContextCompat.getMainExecutor(reactContext);
             BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
@@ -60,35 +64,45 @@ public class RNBiometricAuthModule extends ReactContextBaseJavaModule {
                 .build();
 
             biometricPrompt = new BiometricPrompt(
-                activity,
+                (FragmentActivity) activity,
                 executor,
                 new BiometricPrompt.AuthenticationCallback() {
                     @Override
                     public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-                        WritableMap resultMap = Arguments.createMap();
-                        resultMap.putBoolean("success", true);
-                        currentPromise.resolve(resultMap);
-                        currentPromise = null;
+                        if (currentPromise != null) {
+                            WritableMap resultMap = Arguments.createMap();
+                            resultMap.putBoolean("success", true);
+                            currentPromise.resolve(resultMap);
+                            currentPromise = null;
+                        }
                     }
 
                     @Override
                     public void onAuthenticationFailed() {
-                        currentPromise.reject("UNKNOWN", "Authentication failed");
-                        currentPromise = null;
+                        if (currentPromise != null) {
+                            currentPromise.reject("UNKNOWN", "Authentication failed");
+                            currentPromise = null;
+                        }
                     }
 
                     @Override
                     public void onAuthenticationError(int errorCode, CharSequence errString) {
-                        String error = mapErrorCode(errorCode);
-                        currentPromise.reject(error, errString.toString());
-                        currentPromise = null;
+                        if (currentPromise != null) {
+                            String error = mapErrorCode(errorCode);
+                            currentPromise.reject(error, errString.toString());
+                            currentPromise = null;
+                        }
                     }
                 });
 
             biometricPrompt.authenticate(promptInfo);
         } catch (Exception e) {
-            currentPromise.reject("NOT_AVAILABLE", e.getMessage());
-            currentPromise = null;
+            if (currentPromise != null) {
+                currentPromise.reject("NOT_AVAILABLE", e.getMessage());
+                currentPromise = null;
+            } else {
+                promise.reject("NOT_AVAILABLE", e.getMessage());
+            }
         }
     }
 
