@@ -1,4 +1,4 @@
-package com.speechsampleapp
+package com.sampleapp
 
 import android.app.Application
 import com.facebook.react.PackageList

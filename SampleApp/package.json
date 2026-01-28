@@ -1,5 +1,5 @@
 {
-  "name": "SpeechSampleApp",
+  "name": "SampleApp",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,24 +10,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native/new-app-screen": "0.83.1",
-    "@react-navigation/bottom-tabs": "^7.10.1",
-    "@react-navigation/native": "^7.1.28",
-    "@react-navigation/stack": "^7.6.16",
     "react": "19.2.0",
     "react-native": "0.83.1",
-    "react-native-gesture-handler": "^2.30.0",
-    "react-native-image-picker": "^8.2.1",
-    "react-native-safe-area-context": "^5.6.2",
-    "react-native-screens": "^4.20.0",
-    "rn-biometric-auth": "file:../packages/rn-biometric-auth",
-    "rn-html-render": "file:../packages/rn-html-render",
-    "rn-liquid-glass": "file:../packages/rn-liquid-glass",
-    "rn-ocr": "file:../packages/rn-ocr",
-    "rn-smart-notifications": "file:../packages/rn-smart-notifications",
-    "rn-speech-to-text": "file:../packages/rn-speech-to-text",
-    "rn-text-to-speech": "file:../packages/rn-text-to-speech",
-    "rn-web-preview": "file:../packages/rn-web-preview"
+    "@react-native/new-app-screen": "0.83.1",
+    "react-native-safe-area-context": "^5.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
