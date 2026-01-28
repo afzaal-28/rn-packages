@@ -48,6 +48,7 @@ public class RNBiometricAuthModule extends ReactContextBaseJavaModule {
                 return;
             }
 
+            // BiometricPrompt requires FragmentActivity
             if (!(activity instanceof FragmentActivity)) {
                 promise.reject("NOT_SUPPORTED", "Activity must be a FragmentActivity");
                 return;

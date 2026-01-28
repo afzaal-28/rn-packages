@@ -17,10 +17,39 @@ class MainActivity : FragmentActivity() {
             "SpeechSampleApp",
             fabricEnabled
         )
+        reactActivityDelegate?.onCreate(savedInstanceState)
     }
 
-    override fun getMainComponentName(): String = "SpeechSampleApp"
+    override fun onDestroy() {
+        super.onDestroy()
+        reactActivityDelegate?.onDestroy()
+    }
 
-    override fun createReactActivityDelegate(): ReactActivityDelegate =
+    override fun onPause() {
+        super.onPause()
+        reactActivityDelegate?.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        reactActivityDelegate?.onResume()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        reactActivityDelegate?.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        reactActivityDelegate?.onStop()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        reactActivityDelegate?.onActivityResult(requestCode, resultCode, data)
+    }
+
+    fun createReactActivityDelegate(): ReactActivityDelegate =
         reactActivityDelegate!!
 }
