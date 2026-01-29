@@ -1,6 +1,6 @@
 {
   "name": "rn-voice-to-text",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React Native voice-to-text (speech recognition) library",
   "main": "dist/index.js",
   "react-native": "src/index.ts",
