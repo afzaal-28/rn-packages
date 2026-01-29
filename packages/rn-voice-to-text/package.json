@@ -1,7 +1,7 @@
 {
-  "name": "rn-text-to-voice",
-  "version": "0.1.1",
-  "description": "React Native text-to-voice library",
+  "name": "rn-voice-to-text",
+  "version": "0.1.0",
+  "description": "React Native voice-to-text (speech recognition) library",
   "main": "dist/index.js",
   "react-native": "src/index.ts",
   "types": "dist/index.d.ts",
@@ -20,10 +20,11 @@
   },
   "keywords": [
     "react-native",
-    "text-to-voice",
-    "ttv",
-    "tts",
-    "voice"
+    "voice-to-text",
+    "speech-recognition",
+    "voice",
+    "stt",
+    "vtt"
   ],
   "author": "afzaal",
   "license": "MIT",
