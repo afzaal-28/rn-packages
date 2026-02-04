@@ -156,7 +156,82 @@ RCT_EXPORT_METHOD(exportToFile:(NSString *)text
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     
-    reject(@"NOT_SUPPORTED", @"Export to file is not supported on iOS. This feature requires iOS 13.0+ APIs that are not available in the current deployment target.", nil);
+    if (!text || [text length] == 0) {
+        reject(@"INVALID_REQUEST", @"Text cannot be empty", nil);
+        return;
+    }
+    
+    NSString *outputPath = options[@"outputPath"];
+    if (!outputPath) {
+        reject(@"INVALID_REQUEST", @"Output path is required", nil);
+        return;
+    }
+    
+    if (@available(iOS 13.0, *)) {
+        AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:text];
+        
+        NSString *language = options[@"language"] ?: self.defaultLanguage;
+        float rate = options[@"rate"] ? [options[@"rate"] floatValue] : self.defaultRate;
+        float pitch = options[@"pitch"] ? [options[@"pitch"] floatValue] : self.defaultPitch;
+        NSString *voiceId = options[@"voice"];
+        
+        AVSpeechSynthesisVoice *voice = nil;
+        if (voiceId) {
+            voice = [AVSpeechSynthesisVoice voiceWithIdentifier:voiceId];
+        }
+        
+        if (!voice) {
+            voice = [AVSpeechSynthesisVoice voiceWithLanguage:language];
+        }
+        
+        if (!voice) {
+            reject(@"NOT_AVAILABLE", [NSString stringWithFormat:@"Voice not available for language: %@", language], nil);
+            return;
+        }
+        
+        utterance.voice = voice;
+        utterance.rate = rate;
+        utterance.pitchMultiplier = pitch;
+        
+        AVSpeechSynthesizer *fileSynthesizer = [[AVSpeechSynthesizer alloc] init];
+        NSURL *outputURL = [NSURL fileURLWithPath:outputPath];
+        
+        __block AVAudioFile *output = nil;
+        
+        [fileSynthesizer writeUtterance:utterance toBufferCallback:^(AVAudioBuffer * _Nonnull buffer) {
+            AVAudioPCMBuffer *pcmBuffer = (AVAudioPCMBuffer*)buffer;
+            if (!pcmBuffer) {
+                NSLog(@"Error: Invalid buffer type");
+                return;
+            }
+            
+            if (pcmBuffer.frameLength == 0) {
+            } else {
+                if (output == nil) {
+                    NSError *fileError = nil;
+                    output = [[AVAudioFile alloc] initForWriting:outputURL
+                                                         settings:pcmBuffer.format.settings
+                                                     commonFormat:AVAudioPCMFormatInt16
+                                                      interleaved:NO
+                                                            error:&fileError];
+                    if (fileError) {
+                        NSLog(@"Error creating audio file: %@", fileError.localizedDescription);
+                        return;
+                    }
+                }
+                
+                NSError *writeError = nil;
+                [output writeFromBuffer:pcmBuffer error:&writeError];
+                if (writeError) {
+                    NSLog(@"Error writing buffer: %@", writeError.localizedDescription);
+                }
+            }
+        }];
+        
+        resolve(outputPath);
+    } else {
+        reject(@"NOT_SUPPORTED", @"Export to file requires iOS 13.0 or later", nil);
+    }
 }
 
 - (NSString *)getQualityString:(AVSpeechSynthesisVoiceQuality)quality {

@@ -8,12 +8,12 @@
   "scripts": {
     "build": "pnpm -r run build",
     "clean": "pnpm -r run clean && pnpm -r exec rm -rf node_modules && rm -rf node_modules bin",
-    "pack": "pnpm -r run build && mkdir -p bin && for pkg in packages/*; do (cd \"$pkg\" && npm pack && mv *.tgz ../../bin/ 2>/dev/null || true); done",
+    "pack": "pnpm -r run build && BIN_DIR=\"$(pwd)/bin\" && mkdir -p \"$BIN_DIR\" && for pkg in packages/* packages/other/*; do [ -f \"$pkg/package.json\" ] || continue; (cd \"$pkg\" && npm pack && mv *.tgz \"$BIN_DIR\"/ 2>/dev/null || true); done",
     "lint": "echo \"TODO: add lint script\"",
     "test": "echo \"TODO: add test runner\""
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "typescript": "^5.4.0"
+    "@types/node": "^25.2.0",
+    "typescript": "^5.9.3"
   }
 }
